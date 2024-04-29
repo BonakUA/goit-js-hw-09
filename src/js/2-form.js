@@ -2,35 +2,41 @@ const form = document.querySelector('.feedback-form');
 const emailInput = form.querySelector('input[name="email"]');
 const messageInput = form.querySelector('textarea[name="message"]');
 
-form.addEventListener('input', function () {
-  const formData = {
-    email: emailInput.value.trim(),
-    message: messageInput.value.trim(),
-  };
+let formData = {
+  email: "",
+  message: ""
+};
+
+function saveFormDataToLocalStorage() {
   localStorage.setItem('feedback-form-state', JSON.stringify(formData));
+}
+
+function loadFormDataFromLocalStorage() {
+  const savedFormData = JSON.parse(localStorage.getItem('feedback-form-state')) || {};
+  formData.email = savedFormData.email || '';
+  formData.message = savedFormData.message || '';
+}
+
+window.addEventListener('load', () => {
+  loadFormDataFromLocalStorage();
+  emailInput.value = formData.email;
+  messageInput.value = formData.message;
 });
 
-window.addEventListener('load', function () {
-  const savedFormData =
-    JSON.parse(localStorage.getItem('feedback-form-state')) || {};
-  emailInput.value = savedFormData.email || '';
-  messageInput.value = savedFormData.message || '';
+form.addEventListener('input', event => {
+  const { name, value } = event.target;
+  formData[name] = value.trim();
+  saveFormDataToLocalStorage();
 });
 
-form.addEventListener('submit', function (event) {
+form.addEventListener('submit', event => {
   event.preventDefault();
-
-  const formData = {
-    email: emailInput.value.trim(),
-    message: messageInput.value.trim(),
-  };
-
-  if (formData.email && formData.message) {
+  if (formData.email.trim() === '' || formData.message.trim() === '') {
+    alert('Fill please all fields.');
+  } else {
     console.log(formData);
     localStorage.removeItem('feedback-form-state');
-    emailInput.value = '';
-    messageInput.value = '';
-  } else {
-    alert('Fill please all fields.');
+    formData = { email: "", message: "" };
+    event.target.reset();
   }
 });
